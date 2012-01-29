@@ -1,0 +1,8 @@
+CameraModel
+
+A project to model the electromagnetic fields inside a camera,
+constrained by physics and the (noisy) intensity field measurements
+made by a CCD or equivalent device.
+
+David W. Hogg (NYU)
+Rob Fergus (NYU)
