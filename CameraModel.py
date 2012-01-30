@@ -21,9 +21,9 @@ def intensity(l,a,x,y):
 
 def main():
     lam = 1.2 # wavelength in microns
-    D = 100. * lam # camera aperture in microns
-    f = 500. * lam # focal length in microns
-    K = 200 # number of emitting points
+    D = 50. * lam # camera aperture in microns
+    f = 200. * lam # focal length in microns
+    K = 2. * D / lam # number of emitting points
 
     # set up parabolic lens or mirror
     x = np.zeros((K,3))
@@ -36,9 +36,10 @@ def main():
     a *= np.exp(1j * np.linspace(0.,5.,K))
 
     # set up focal plane and put it in focus
-    N = 3000
+    yres = 0.01 * f * lam / D
+    N = 1000
     y = np.zeros((N,3))
-    y[:,0] = (np.arange(N) - 0.5 * N + 0.5) * 0.01 * lam
+    y[:,0] = (np.arange(N) - 0.5 * N + 0.5) * yres
     y[:,1] = f
 
     # compute and plot intensity
@@ -48,8 +49,11 @@ def main():
     for xi, ai in zip(x,a):
         plt.plot([xi[0], xi[0] - np.imag(ai)], [xi[1], xi[1] + np.real(ai)], 'r-')
         plt.plot(xi[0], xi[1], 'k.')
+    plt.axis('equal')
+    plt.xlim(np.min(x[:,0]), np.max(x[:,0]))
     plt.subplot(2,1,2)
     plt.plot(y[:,0], I, 'k-')
+    plt.xlim(np.min(y[:,0]), np.max(y[:,0]))
     plt.savefig('cm.png')
     return None
 
