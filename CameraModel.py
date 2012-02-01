@@ -1,3 +1,14 @@
+'''
+Copyright 2012 David W. Hogg (NYU).
+All rights reserved.
+
+Send email (I am easy to find on the web) if you are interested in
+licensing this code for your own use or re-use.
+
+David W. Hogg
+http://cosmo.nyu.edu/hogg/
+'''
+
 if __name__ == '__main__':
     import matplotlib
     matplotlib.use('Agg')
