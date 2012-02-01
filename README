@@ -4,12 +4,11 @@ A project to model the electromagnetic fields inside a camera,
 constrained by physics and the (noisy) intensity field measurements
 made by a CCD or equivalent device.  (This might be a very bad idea.)
 
-Authors: David W. Hogg (NYU) http://cosmo.nyu.edu/hogg/
-         Rob Fergus (NYU)
+Author:  David W. Hogg (NYU) http://cosmo.nyu.edu/hogg/
 
 License: All contents are Copyright 2012 David W. Hogg (NYU).
          All rights reserved.
 
-         Send email (we are easy to find on the web) if you are
+         Send email (it is easy to find on the web) if you are
          interested in licensing any of the code for your own use or
          re-use.
