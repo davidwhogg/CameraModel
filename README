@@ -2,7 +2,7 @@ CameraModel
 
 A project to model the electromagnetic fields inside a camera,
 constrained by physics and the (noisy) intensity field measurements
-made by a CCD or equivalent device.  (This might be a very bad idea.)
+made by a CCD or equivalent device.
 
 Author:  David W. Hogg (NYU) http://cosmo.nyu.edu/hogg/
 
