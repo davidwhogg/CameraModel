@@ -61,10 +61,10 @@ def parabolic_mirror(D, f, xres, random=False):
     x = np.zeros((K, 3))
     x[:,0] = x0
     x[:,1] = x1
-    x[:,2] = 0.5 * (x0**2 + x1**2) / f # all on a parabola
+    x[:,2] = 0.25 * (x0**2 + x1**2) / f # all on a parabola
     return x
 
-def distort_mirror(x):
+def distort_points(x):
     '''
     Take N input 3-dimensional points x[:] and shift them in the z
     direction by random amounts according to a hard-coded and insane
@@ -121,8 +121,8 @@ def main():
     lam = 1.2 # wavelength in microns
     D = 20. * lam # camera aperture in microns
     f = 4. * D # focal length in microns
-    xp = parabolic_mirror(D, f, 0.5 * lam, random=True)
-    x = distort_mirror(xp)
+    xp = parabolic_mirror(D, 0.5 * f, 0.5 * lam, random=True)
+    x = distort_points(xp)
     K = len(x)
     a = np.ones(K).astype('complex') # all identical phases to start
     Ny = 64
