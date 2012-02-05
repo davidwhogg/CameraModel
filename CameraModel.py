@@ -1,12 +1,7 @@
 '''
-Copyright 2012 David W. Hogg (NYU).
+This file is part of CameraModel.
+Copyright 2012 David W. Hogg (NYU) <http://cosmo.nyu.edu/hogg/>.
 All rights reserved.
-
-Send email (I am easy to find on the web) if you are interested in
-licensing this code for your own use or re-use.
-
-David W. Hogg
-http://cosmo.nyu.edu/hogg/
 '''
 
 if __name__ == '__main__':
