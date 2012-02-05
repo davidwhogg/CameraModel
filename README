@@ -4,7 +4,7 @@ A project to model the electromagnetic fields (or at least phase
 information) inside a camera, constrained by physics and the (noisy)
 intensity field measurements made by a CCD or equivalent device.
 
-Copyright 2012 David W. Hogg (NYU) http://cosmo.nyu.edu/hogg/
+Copyright 2012 David W. Hogg (NYU) <http://cosmo.nyu.edu/hogg/>.
 
 License:  All rights reserved.
 
