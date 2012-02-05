@@ -1,8 +1,9 @@
 CameraModel
+===========
 
-A project to model the electromagnetic fields inside a camera,
-constrained by physics and the (noisy) intensity field measurements
-made by a CCD or equivalent device.
+A project to **model the electromagnetic fields** (or at least phase
+information) inside a camera, constrained by physics and the (noisy)
+intensity field measurements made by a CCD or equivalent device.
 
 Author:  David W. Hogg (NYU) http://cosmo.nyu.edu/hogg/
 
