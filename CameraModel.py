@@ -12,7 +12,7 @@ if __name__ == '__main__':
 import numpy as np
 import pylab as plt
 
-class OpticalSurface(ndarray):
+class OpticalSurface():
     '''
     A surface of a lens or a mirror or a wavefront.
 
@@ -36,16 +36,26 @@ class OpticalSurface(ndarray):
             x0 = x0[I]
             x1 = x1[I]
         K = len(x0)
-        self.x = np.zeros((K, 3))
+        self.x = np.zeros((K, 3)).astype(float)
         self.x[:,0] = x0
         self.x[:,1] = x1
+        return None
+
+    def shift(self, deltaz):
+        '''
+        Move the optical surface in the z (x[:,2]) direction by
+        distance deltaz.
+        '''
+        self.x[:,2] += deltaz
         return None
 
     def distort_parabolically(self, f):
         '''
         Distort the optical surface from a flat plane into a mirror of
         focal length f.  This routine assumes that the surface is
-        centered and aligned along the z (x[:,2]) axis.
+        centered and aligned along the z (x[:,2]) axis.  Positive and
+        negative f correspond to the same focal length but different
+        orientations; RTFSC.
         '''
         self.x[:,2] += 0.25 * (self.x[:,0]**2 + self.x[:,1]**2) / f
         return None
@@ -61,22 +71,31 @@ class OpticalSurface(ndarray):
                 self.x[:,2] += amp * np.random.normal() * (self.x[:,0] / D)**xo * (self.x[:,1] / self.D)**yo
         return None
 
-    def field(self, lam, a, x):
+    def drill_hole(self, r):
         '''
-        Given a set of K monochromatic sources emitting radiation at
-        wavelength lam from K three-dimensional positions x[:] with K
-        complex amplitudes a[:], compute N complex amplitudes b[:] at
-        N three-dimensional positions self.x[:], assuming no
-        reflections or absorptions anywhere (that is, vacuum).
+        Remove surface points within a circular region of radius r at
+        the center.
         '''
-        dist = np.sqrt(np.sum((x[:,np.newaxis,:] - self.x[np.newaxis,:,:])**2, axis=2))
+        I = (self.x[:,0]**2 + self.x[:,1]**2) > (r**2)
+        self.x = self.x[I]
+        return None
+
+    def field(self, lam, a, transmitter):
+        '''
+        Given a transmitter OpticalSurface emitting radiation at
+        wavelength lam with complex amplitude map a[:], compute and
+        return complex amplitudes map at the receiver surface (self)
+        assuming no reflections or absorptions anywhere (that is,
+        vacuum).
+        '''
+        dist = np.sqrt(np.sum((transmitter.x[:,np.newaxis,:] - self.x[np.newaxis,:,:])**2, axis=2))
         return np.sum((a[np.newaxis,:] / dist) * np.exp(2. * np.pi * 1j * dist / lam), axis=0)
 
 class CameraStage():
     '''
     A stage in a CameraModel made up of a transmitter OpticalSurface
-    and a receiver OpticalSurface.  See class Camera() for more
-    context and some detail.
+    and a receiver OpticalSurface.  See classes OpticalSurface() and
+    Camera() for more context and some detail.
 
     Input at initialization: A transmitter surface (of class
     OpticalSurface) and a receiver surface (same).
@@ -129,11 +148,11 @@ class Camera():
             amp = stage.receive(lam, amp)
         return np.real(amp)**2 + np.imag(amp)**2
 
-    def plot_lens_and_intensity(x,y,I):
+    def plot_camera_and_intensity():
         '''
         Basic plotting, with everything (stupidly) hard-coded.
 
-        THIS DOES NOT CURRENTLY WORK
+        Bugs: THIS DOES NOT CURRENTLY WORK AT ALL.
         '''
         Ny = np.round(np.sqrt(len(y))).astype(int)
         plt.subplot(2,2,1)
