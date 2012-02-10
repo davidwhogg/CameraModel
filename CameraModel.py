@@ -46,10 +46,8 @@ class OpticalSurface(ndarray):
         Distort the optical surface from a flat plane into a mirror of
         focal length f.  This routine assumes that the surface is
         centered and aligned along the z (x[:,2]) axis.
-        
-        If random, then do the same but not on a regular square grid.
         '''
-        self.x[:,2] += 0.25 * (self.x[:,0]**2 + self.x[:,1]**2) / f # all on a parabola
+        self.x[:,2] += 0.25 * (self.x[:,0]**2 + self.x[:,1]**2) / f
         return None
 
     def distort_randomly(self, amp=1., order=10):
