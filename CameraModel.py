@@ -41,6 +41,14 @@ class OpticalSurface():
         self.x[:,1] = x1
         return None
 
+    def copy(self):
+        other = OpticalSurface(0., 1.)
+        other.D = self.D
+        other.xres = self.xres
+        other.square = self.square
+        other.x = self.x.copy()
+        return other
+
     def shift(self, deltaz):
         '''
         Move the optical surface in the z (x[:,2]) direction by
@@ -89,7 +97,7 @@ class OpticalSurface():
         vacuum).
         '''
         dist = np.sqrt(np.sum((transmitter.x[:,np.newaxis,:] - self.x[np.newaxis,:,:])**2, axis=2))
-        return np.sum((a[np.newaxis,:] / dist) * np.exp(2. * np.pi * 1j * dist / lam), axis=0)
+        return np.sum((a[:,np.newaxis] / dist) * np.exp(2. * np.pi * 1j * dist / lam), axis=0)
 
 class CameraStage():
     '''
@@ -101,8 +109,8 @@ class CameraStage():
     OpticalSurface) and a receiver surface (same).
     '''
     def __init__(self, transmitter, receiver):
-        self.transmitter = transmitter
-        self.reciever = receiver
+        self.transmitter = transmitter.copy()
+        self.receiver = receiver.copy()
         return None
 
     def receive(self, lam, amplitude):
@@ -113,11 +121,11 @@ class CameraStage():
 
         Output: the complex amplitude map at the receiver surface
         '''
-        return receiver.field(lam, amplitude, self.transmitter)
+        return self.receiver.field(lam, amplitude, self.transmitter)
 
 class Camera():
     '''
-    The Camera Model after which this project is named is made up of a
+    The camera model after which this project is named is made up of a
     set of CameraStages.  In each CameraStage, there is a transmitter
     OpticalSurface that is broadcasting wavefronts and a receiver
     OpticalSurface that is detecting them.  In a Camera with multiple
@@ -134,7 +142,7 @@ class Camera():
         self.stages = stages
         return None
 
-    def take_one_image(self, lam, amplitude):
+    def take_one_image(self, lam, amplitude=None):
         '''
         Input: the wavelength lam at which the image is to be taken
         and the specification of the complex amplitude map at the
@@ -143,52 +151,58 @@ class Camera():
         Output: the intensity at the receiver surface of the final
         stage
         '''
-        amp = amplitude
+        if amplitude is None:
+            amp = np.ones(len(self.stages[0].transmitter.x))
+        else:
+            amp = amplitude
         for stage in self.stages:
+            print amp
             amp = stage.receive(lam, amp)
+        print amp
         return np.real(amp)**2 + np.imag(amp)**2
 
-    def plot_camera_and_intensity():
-        '''
-        Basic plotting, with everything (stupidly) hard-coded.
-
-        Bugs: THIS DOES NOT CURRENTLY WORK AT ALL.
-        '''
-        Ny = np.round(np.sqrt(len(y))).astype(int)
-        plt.subplot(2,2,1)
-        plt.plot(x[:,2], x[:,1], 'k.', alpha=0.25)
-        plt.axis('equal')
-        plt.subplot(2,2,2)
-        plt.plot(x[:,0], x[:,1], 'k.', alpha=0.25)
-        plt.axis('equal')
-        plt.subplot(2,2,3)
-        plt.plot(x[:,0], x[:,2], 'k.', alpha=0.25)
-        plt.axis('equal')
-        plt.subplot(2,2,4)
-        plt.gray()
-        logI = np.log(I.reshape((Ny, Ny)))
-        vmax = np.max(logI)
-        plt.imshow(logI, vmin=vmax-8., vmax=vmax)
-        plt.axis('equal')
+class Coronograph(Camera):
+    '''
+    A particular kind of Camera that has the properties of a
+    coronograph.  The zeroth CameraStage has a parabolic incoming
+    wavefront transmitter, converging on a focal plane receiver with a
+    hole drilled in it.  The first CameraStage makes that focal plane
+    the transmitter back to an identical parabolic reflector receiver.
+    The third has that reflector transmit back to the final focal
+    plane.
+    '''
+    def __init__(self, fratio=4):
+        self.stages = []
+        D = 25. # camera aperture in microns
+        res = 0.5 # resolution in microns
+        transmitter = OpticalSurface(D, res)
+        f = fratio * D # focal length
+        transmitter.distort_parabolically(0.5 * f)
+        receiver = OpticalSurface(f, res)
+        holeradius = 4.5 * fratio # microns
+        receiver.drill_hole(holeradius)
+        receiver.shift(f)
+        self.stages.append(CameraStage(transmitter, receiver))
+        self.stages.append(CameraStage(receiver, transmitter))
+        detector = OpticalSurface(0.75 * f, 2. * res, square=True)
+        detector.shift(f)
+        self.stages.append(CameraStage(transmitter, detector))
         return None
 
 def main():
     '''
     THIS DOES NOT CURRENTLY WORK
     '''
-    lam = 1.2 # wavelength in microns
-    D = 20. * lam # camera aperture in microns
-    f = 4. * D # focal length in microns
-    xp = parabolic_mirror(D, 0.5 * f, 0.5 * lam, random=True)
-    x = distort_points(xp)
-    K = len(x)
-    a = np.ones(K).astype('complex') # all identical phases to start
-    Ny = 64
-    y = focal_plane_array(Ny, 0.2 * f * lam / D)
-    y[:,2] = f
-    I = intensity(lam, a, x, y)
+    cg = Coronograph()
+    lam = 1.2 # microns
+    image = cg.take_one_image(lam)
+    Ny = np.round(np.sqrt(len(image))).astype(int)
+    logI = np.log(image.reshape((Ny, Ny)))
+    vmax = np.max(logI)
     plt.clf()
-    plot_lens_and_intensity(x,y,I)
+    plt.gray()
+    plt.imshow(logI, vmin=vmax-8., vmax=vmax)
+    plt.axis('equal')
     plt.savefig('cm.png')
     return None
 
