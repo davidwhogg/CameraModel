@@ -68,7 +68,7 @@ class OpticalSurface():
         self.x[:,2] += 0.25 * (self.x[:,0]**2 + self.x[:,1]**2) / f
         return None
 
-    def distort_randomly(self, amp=1., order=10):
+    def distort_randomly(self, amp=0.5, order=10):
         '''
         Shift the surface in the z direction by random amounts
         according to a hard-coded and insane set of rules.
@@ -76,7 +76,7 @@ class OpticalSurface():
         for o in range(order + 1):
             for yo in range(o + 1):
                 xo = o - yo
-                self.x[:,2] += amp * np.random.normal() * (self.x[:,0] / D)**xo * (self.x[:,1] / self.D)**yo
+                self.x[:,2] += amp * np.random.normal() * (self.x[:,0] / self.D)**xo * (self.x[:,1] / self.D)**yo
         return None
 
     def drill_hole(self, r):
@@ -171,39 +171,38 @@ class Coronograph(Camera):
     The third has that reflector transmit back to the final focal
     plane.
     '''
-    def __init__(self, fratio=4):
+    def __init__(self, fratio=4, distorted=True):
         self.stages = []
         D = 25. # camera aperture in microns
         res = 0.5 # resolution in microns
         transmitter = OpticalSurface(D, res)
         f = fratio * D # focal length
         transmitter.distort_parabolically(0.5 * f)
+        if distorted:
+            transmitter.distort_randomly()
         receiver = OpticalSurface(f, res)
         holeradius = 4.5 * fratio # microns
         receiver.drill_hole(holeradius)
         receiver.shift(f)
         self.stages.append(CameraStage(transmitter, receiver))
         self.stages.append(CameraStage(receiver, transmitter))
-        detector = OpticalSurface(0.75 * f, 2. * res, square=True)
+        detector = OpticalSurface(f, 2. * res, square=True)
         detector.shift(f)
         self.stages.append(CameraStage(transmitter, detector))
         return None
 
 def main():
-    '''
-    THIS DOES NOT CURRENTLY WORK
-    '''
     cg = Coronograph()
-    lam = 1.2 # microns
-    image = cg.take_one_image(lam)
-    Ny = np.round(np.sqrt(len(image))).astype(int)
-    logI = np.log(image.reshape((Ny, Ny)))
-    vmax = np.max(logI)
-    plt.clf()
-    plt.gray()
-    plt.imshow(logI, vmin=vmax-8., vmax=vmax)
-    plt.axis('equal')
-    plt.savefig('cm.png')
+    for lam in np.arange(1.0, 2.0, 0.02):
+        image = cg.take_one_image(lam)
+        Ny = np.round(np.sqrt(len(image))).astype(int)
+        logI = np.log(image.reshape((Ny, Ny)))
+        vmax = np.max(logI)
+        plt.clf()
+        plt.gray()
+        plt.imshow(logI, vmin=vmax-8., vmax=vmax)
+        plt.axis('equal')
+        plt.savefig('cm%3.2f.png' % lam)
     return None
 
 if __name__ == '__main__':
