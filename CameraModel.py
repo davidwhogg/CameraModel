@@ -72,6 +72,10 @@ class OpticalSurface():
         '''
         Shift the surface in the z direction by random amounts
         according to a hard-coded and insane set of rules.
+
+        Bugs: 1. Need to switch to orthogonal polynomial functions.
+        2. Don't do low-order distortions, because the AO system is
+        taking those out.
         '''
         for o in range(order + 1):
             for yo in range(o + 1):
