@@ -10,6 +10,7 @@ if __name__ == '__main__':
     rc('font',**{'family':'serif','serif':'Computer Modern Roman','size':12})
     rc('text', usetex=True)
 import numpy as np
+import numpy.polynomial.chebyshev as cheby
 import pylab as plt
 
 class OpticalSurface():
@@ -68,19 +69,25 @@ class OpticalSurface():
         self.x[:,2] += 0.25 * (self.x[:,0]**2 + self.x[:,1]**2) / f
         return None
 
-    def distort_randomly(self, amp=0.5, order=10):
+    def distort_randomly(self, amp=0.5, startorder=4, endorder=15):
         '''
         Shift the surface in the z direction by random amounts
         according to a hard-coded and insane set of rules.
 
-        Bugs: 1. Need to switch to orthogonal polynomial functions.
-        2. Don't do low-order distortions, because the AO system is
-        taking those out.
+        Bugs: There is almost certainly a chebyshev-based one-liner
+        that can be done here, but I can't figure out the chebyshev
+        coefficient formatting for two-d chebyshev functions.  And the
+        numpy documentation I see online is inconsistent with what I
+        get locally on my computer; not sure what's up.
         '''
-        for o in range(order + 1):
+        xx = 2. * self.x[:,0] / self.D # -1 < xx < 1
+        yy = 2. * self.x[:,1] / self.D # -1 < yy < 1
+        for o in range(startorder, endorder + 1):
             for yo in range(o + 1):
                 xo = o - yo
-                self.x[:,2] += amp * np.random.normal() * (self.x[:,0] / self.D)**xo * (self.x[:,1] / self.D)**yo
+                cx = cheby.Chebyshev(np.append(np.zeros(xo), 1.))
+                cy = cheby.Chebyshev(np.append(np.zeros(yo), 1.))
+                self.x[:,2] += amp * np.random.normal() * cx(xx) * cy(yy)
         return None
 
     def drill_hole(self, r):
