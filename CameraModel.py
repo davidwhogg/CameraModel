@@ -69,7 +69,7 @@ class OpticalSurface():
         self.x[:,2] += 0.25 * (self.x[:,0]**2 + self.x[:,1]**2) / f
         return None
 
-    def distort_randomly(self, amp=0.5, startorder=4, endorder=15):
+    def distort_randomly(self, amp=0.06, startorder=10, endorder=15):
         '''
         Shift the surface in the z direction by random amounts
         according to a hard-coded and insane set of rules.
@@ -87,7 +87,7 @@ class OpticalSurface():
                 xo = o - yo
                 cx = cheby.Chebyshev(np.append(np.zeros(xo), 1.))
                 cy = cheby.Chebyshev(np.append(np.zeros(yo), 1.))
-                self.x[:,2] += amp * np.random.normal() * cx(xx) * cy(yy)
+                self.x[:,2] += (amp / o) * np.random.normal() * cx(xx) * cy(yy)
         return None
 
     def drill_hole(self, r):
@@ -192,7 +192,7 @@ class Coronograph(Camera):
         if distorted:
             transmitter.distort_randomly()
         receiver = OpticalSurface(f, res)
-        holeradius = 4.5 * fratio # microns
+        holeradius = 3. * fratio # microns
         receiver.drill_hole(holeradius)
         receiver.shift(f)
         self.stages.append(CameraStage(transmitter, receiver))
@@ -204,7 +204,7 @@ class Coronograph(Camera):
 
 def main():
     cg = Coronograph()
-    for lam in np.arange(1.0, 2.0, 0.02):
+    for lam in np.arange(1.0, 2.01, 0.02):
         image = cg.take_one_image(lam)
         Ny = np.round(np.sqrt(len(image))).astype(int)
         logI = np.log(image.reshape((Ny, Ny)))
