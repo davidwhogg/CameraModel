@@ -17,15 +17,15 @@ class OpticalSurface():
     '''
     ## class `OpticalSurface`:
 
-    A surface of a lens or a mirror or a wavefront.
+    A surface of a lens or a mirror or a wavefront.  At
+    initialization, the surface is flat, circular, centered on the
+    origin, and normal to the z (`x[:,2]`) axis.
 
-    Input at initialization: the diameter `D` of the (circular)
-    surface and the resolution `xres` (really the grid spacing).  At
-    initialization, the surface is centered on the origin and normal
-    to the z (`x[:,2]`) axis.
-    
-    Optional input at initialization: If `square`, then make the
-    surface square not circular.
+    # initialization input:
+
+    * `D`: The diameter of the surface.
+    * `xres`: The spacing of the control-point grid.
+    * `square`: If `True`, make the surface square.
     '''
     def __init__(self, D, xres, square=False):
         self.D = D
@@ -230,7 +230,15 @@ class Coronograph(Camera):
     hole drilled in it.  The first `CameraStage` makes that focal
     plane the transmitter back to an identical parabolic reflector
     receiver.  The third has that reflector transmit back to the final
-    focal plane.  RTFSC.
+    focal plane.
+
+    There are many dumb choices here, including magic numbers chosen
+    without analysis.  RTFSC.
+
+    # initialization input:
+
+    * `fratio`: F ratio of the primary optics (default 4).
+    * `distorted`: If `False`, don't apply random distortions.
     '''
     def __init__(self, fratio=4, distorted=True):
         self.stages = []
