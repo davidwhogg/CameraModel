@@ -242,15 +242,15 @@ class Coronograph(Camera):
     '''
     def __init__(self, fratio=4, distorted=True):
         self.stages = []
-        D = 25. # camera aperture in microns
+        D = 30. # camera aperture diameter in microns
         res = 0.5 # resolution in microns
         transmitter = OpticalSurface(D, res)
         f = fratio * D # focal length
         transmitter.distort_parabolically(0.5 * f)
         if distorted:
             transmitter.distort_randomly()
-        receiver = OpticalSurface(f, res)
-        holeradius = 3. * fratio # microns
+        receiver = OpticalSurface(f, 0.5 * fratio * res)
+        holeradius = 4. * fratio # microns
         receiver.drill_hole(holeradius)
         receiver.shift(f)
         self.stages.append(CameraStage(transmitter, receiver))
