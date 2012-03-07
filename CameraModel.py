@@ -125,6 +125,10 @@ class OpticalSurface():
         `a[:]`, compute and return complex amplitudes map at the
         receiver surface (self) assuming no reflections or absorptions
         anywhere (that is, vacuum).
+
+        This function does the heavy lifting, which is the convolution
+        by the Green function.  It is way stupid because it does a
+        huge quadratic operation.
         '''
         dist = np.sqrt(np.sum((transmitter.x[:,np.newaxis,:] - self.x[np.newaxis,:,:])**2, axis=2))
         return np.sum((a[:,np.newaxis] / dist) * np.exp(2. * np.pi * 1j * dist / lam), axis=0)
