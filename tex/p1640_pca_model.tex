@@ -1,7 +1,166 @@
 \documentclass[12pt,pdftex,preprint]{aastex}
 
+\newcommand{\project}[1]{\textsl{#1}}
+\newcommand{\documentname}{\textsl{Article}}
+
 \begin{document}
 
-Hello world!
+\title{DRAFT: A precise data-driven model for high-dynamic-range imaging}
+
+\author{Rob~Fergus\altaffilmark{1, 2},
+        David~W.~Hogg\altaffilmark{3},
+        Ben~R.~Oppenheimer\altaffilmark{4},
+        Douglas~Brenner\altaffilmark{4},
+        others}
+\altaffiltext{1}{Department of Computer Science, New York University}
+\altaffiltext{2}{to whom correspondence should be addressed: fergus@cs.nyu.edu}
+\altaffiltext{3}{Center for Cosmology and Particle Physics, Department of Physics, New York University, 4 Washington Pl, New York, NY 10003}
+\altaffiltext{4}{Department of Astrophysics, American Museum of Natural History}
+
+\begin{abstract}
+We build an incredibly flexible data-driven model for the unblocked
+(and highly speckled) light in the \project{P1640} spectroscopic
+coronograph to make very sensitive detections and measurements of
+faint companions to bright stars.  The model is designed to be able to
+capture the spatial structure and wavelength dependence of the
+speckles but not the signal produced by a faint companion to the
+primary source.  The model includes a PCA that can capture the
+irregular expansion of the speckle pattern with wavelength, which for
+each proposed companion position is trained on pixels not overlapping
+the proposed position.  We find that we are sensitive to companions
+that are of order a percent of the brightness of the speckles, or
+hundreds (?) of thousands of times fainter than the primary star in
+the data we have, outperforming existing methods by a factor of ten.
+Future high dynamic-range imagers will require not just precise optics
+but also precise software if they are to meet their goals.
+\end{abstract}
+
+\section{Introduction}
+
+High dynamic range imaging and spectroscopy is the next frontier in
+the study of exoplanets.  There is hope for atmospheric spectroscopy
+of substantial numbers of giant planets, detection of planets at large
+albedo and radius, and eventually---with something like the far-future
+\project{Terrestrial Planet Finder}---direct time-domain imaging and
+spectroscopy of Earth-like planets around other stars.  All of these
+projects involve exceedingly precise optical designs, in which the
+primary star is more-or-less nulled, at least for certain locations on
+the focal plane.  Perfect nulling is almost never possible, because it
+requires sub-wavelength control of extremely large optical surfaces
+and the wavefronts reflected from them.  There is no future of these
+projects without very sophisticated instrument models.
+
+A working example is the \project{P1640} spectroscopic coronograph (reference).
+It [has the following characteristics and successes].  The images
+produced by \project{P1640} have the vast majority of the light from the primary
+star nulled at the focal plane.  The remaining light falls in a highly
+speckled pattern produced by constructive and destructive interference
+of residual imperfections in the wavefronts entering the instrument,
+made worse by differential chromatic aberration.  The speckle pattern
+is quasi-random but has some overall variation with wavelength,
+somewhat like the pure angular expansion with wavelength that would be
+expected for perfect optics, but not exactly. [Show some example data
+  here; demonstrate regularities \emph{and} variation].
+
+In principle, a wavelength-level model of the wavefronts and all
+optical (and non-optical) surfaces in the \project{P1640} system would produce a
+precise model of the intensity maps read out at the detector.
+Naively, this model would have of order $10^12$ parameters and be
+intractable to instantiate, let alone fit or optimize.  Without this
+model, the speckles are stochastic but with strong regularities.  This
+suggests data-driven modeling, or using the \emph{data that the
+  instrument has in fact taken} to build a precise and informative but
+flexible model of the data that it \emph{can} produce.  If this model
+can be trained on data that don't have---or aren't expected to
+have---faint companions contributing, then companions can be detected
+as failures of the model, or successes of a model that is a
+superposition of the data-driven model and a model companion.
+
+Of course, we don't know in advance what stars will have companions,
+and what won't; we don't have tagged data for training what are known
+as ``supervised'' methods.  Relying on the fact that companions are
+extremely rare, we adopt a ``train and test'' framework, in which we
+use, when looking for a companion at a particular location in the
+focal plane, all the data in the data set \emph{not} at that location
+to train the model.  At the same time, we have very severe precision
+requirements, because we are looking for companions that are far
+fainter than the residual intensity in the instrument.  This latter
+requirement pushes us towards models for the unblocked light that are
+extremely flexible, but not so flexible that they can absorb light
+from companions.  We will end up getting good performance by using
+models with dozens to hundreds of parameters in every small patch of
+the focal plane.
+
+In this \documentname, we present a new methodology for modeling high
+dynamic-range data that is extremely effective when the images are
+spectroscopically sliced.  We demonstrate the method with \project{P1640} data,
+and release working code.
+
+\section{Method}
+
+From the perspective of this \documentname, the \project{P1640}
+instrument produces properly calibrated intensity information $I_{x y
+  \lambda n}$ on a four-dimensional boxel grid where the $(x, y)$
+indices indicate a pixel number on a regular square pixel grid in the
+focal plane, the $\lambda$ index indicates one of a set of narrow
+wavelength bins, and the $n$ index is exposure index or epoch number
+in the multiple exposures that make up the data set for any one star.
+The \project{P1640} instrument does not directly deliver data in this
+form; it has to be processed into this form by a non-trivial
+calibration and rectification pipeline (reference) that is outside our
+current scope.
+
+spatial centering and transformation to $(r, \theta, \lambda, n)$
+
+definition of patch, slice; approximate sizes
+
+definition of test sample and train complement; approximate sizes
+
+PCA on test sample
+
+reconstruct patches as a function of $K$, save residuals
+
+\section{Results}
+
+\section{Discussion}
+
+We have shown that a very flexible model for the unblocked light and a
+model for a point-source companion can be used to make very precise
+detections and measurements of faint companions in the high
+dynamic-range spectroscopic imaging \project{P1640} instrument.  The
+performance of our system is better by an order of magnitude than
+existing methods for detecting faint companions.
+
+There are a number of issues with the methods we have presented here;
+work on these could further improve performance: We don't use a proper
+instrument noise model in the construction of the model.  It would be
+better to modify the PCA operation so that it makes use of the known
+noise properties of the instrument (such as that of \citealt{hmf}).
+In our mixture model (unblocked light plus planet), the planet model
+is very rigid; it contains a particular SED assumption at the
+detection step, and doesn't have enough angular flexibility to capture
+possibly significant point-spread function morphology and variability.
+Not surprisingly, the data-driven model we use is \emph{data starved};
+it takes an enormous amount of data to fully constrain a flexible
+data-driven model.  The model will get better as more data get taken
+of a wider range of objects over a wider range of instrument and
+atmsopheric conditions.  Related to this, the model we use does not
+take as input any meta data about the telescope attitude (think
+``gravitational loading'' and ``differential chromatic refraction'')
+or observing conditions in training.  Data taken at different
+altitudes show regularities that a more sophisticated model could
+capture and use.  Another related limitation is that we treated the
+data on different stars independently whereas data from multiple stars
+could be combined for some aspects of model training.
+
+\acknowledgements It is a pleasure to thank [insert names here].  RF
+was partially supported by [grant numbers here and same for DWH, BRO,
+  DB etc].  Do we need an acknowledgement for \project{P1640}, Palomar
+observers, and so on?
+
+\begin{thebibliography}{}
+\bibitem[Tsalmantza \& Hogg(2012)]{hmf}
+Tsalmantza,~P. \& Hogg,~D.~W., 2012, arXiv:1201.3370
+\end{thebibliography}
 
 \end{document}
