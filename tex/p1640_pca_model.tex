@@ -1,7 +1,8 @@
 \documentclass[12pt,pdftex,preprint]{aastex}
 
-\newcommand{\project}[1]{\textsl{#1}}
 \newcommand{\documentname}{\textsl{Article}}
+\newcommand{\project}[1]{\textsl{#1}}
+\newcommand{\test}{\mathrm{test}}
 
 \begin{document}
 
@@ -98,6 +99,8 @@ and release working code.
 
 \section{Method}
 
+[perhaps here a bit of an overview of how the instrument works]
+
 From the perspective of this \documentname, the \project{P1640}
 instrument produces properly calibrated intensity information $I_{x y
   \lambda n}$ on a four-dimensional boxel grid where the $(x, y)$
@@ -108,17 +111,104 @@ in the multiple exposures that make up the data set for any one star.
 The \project{P1640} instrument does not directly deliver data in this
 form; it has to be processed into this form by a non-trivial
 calibration and rectification pipeline (reference) that is outside our
-current scope.
+current scope.  In brief, we are going to build a model for small
+patches of this data by taking representative sets of patches
+(training sets) and building a PCA-based data-driven model for
+patches.
 
-spatial centering and transformation to $(r, \theta, \lambda, n)$
+We locate the optical center of the system in the image (the location
+of the star, which---ideally---is centered on the coronographic stop.
+This involves centroiding four control spots created by reflections of
+a tiny fraction of the primary light in the instrument.  Relative to
+this located center, we transform the data from cartesian $I_{x y
+  \lambda n}$ to polar $D_{r \theta \lambda n}$ coordinates, where
+again the subscripts are indices but now $r$ indicates radial bin, and
+$\theta$ indicates angular bin in the polar grid.  There are $R\sim
+100$ radial bins ($1\leq r\leq R$), $\Theta\sim 300$ angular bins
+($1\leq\theta\leq\Theta$), $\Lambda\sim 30$ wavelength bins
+($1\leq\theta\leq\Theta$), and $N\sim 10$ exposures ($1\leq
+n\leq N$) for typical exposure sequences.  That is, the full data
+object $D_{r \theta \lambda n}$ has size (number of voxels)
+$[R\times\Theta\times\Lambda\times N]$.  We use symbol $D$ for the
+transformed data and not $I$ because in the transformation we
+multiplied by a ratio of volumes to flatten a bit the dynamic range
+[Fergus?].
 
-definition of patch, slice; approximate sizes
+The data is modeled in tiny \emph{patches} $P_{r \theta n}$, which are
+cutouts of size $[W\times 3\times\Lambda\times 1]$ from the full data
+object.  These have a width $W\sim 31$~pix in the radial direction,
+3~pix in the angular direction, but cover the full wavelength range
+from a single exposure.  Each patches consists of a few thousand
+contiguous data voxels.  In the most trivial radially symmetric model
+for the instrument, the wavelength dependence of the data should be
+purely linear radial expansion with wavelength.  The ``shape'' of the
+patches permits the model to capture this behavior easily by
+containing a significant radial domain and the full wavelength domain.
+The 3~pix angular domain permits the model to find angular correlates
+of departures from the purely radial expectation.  We chose the
+angular width of 3~pix by trial and error; large values increase the
+expense of the PCA (below) without much performance benefit.
 
-definition of test sample and train complement; approximate sizes
+The patch resides in a \emph{slice} $S_r$, which is a cutout of size
+$[W\times\Theta\times\Lambda\times N]$ of the data; it consists of the
+unions of all the patches centered on a particular radial index $r$.
+The slice is subdivided into an angular \emph{test region} of angular
+width $\Theta_\test\sim 15$~pix, and the disjoint part of the slice
+makes up the \emph{training region}.  Every patch lies in at least one
+test region (there is a stride $\Delta\Theta$ separating the start
+points of the overlapping test regions in the $\theta$ direction.
+Although the patches have individual angular widths of 3~pix, there is
+a patch defined for every angular bin $1 < \theta > \Theta$.
+Therefore the training set for one patch contains
+$[1\times(\Theta-\Theta_\test)\times 1\times N]$ or about 300 example
+patches.
 
-PCA on test sample
+In the PCA step, we reformat the training set of patches into a
+two-dimensional data matrix and find the singular value decomposition
+(SVD).  This SVD returns the ranked list of principal components,
+which are eigenvalue-ranked eigenvectors.  Each eigenvector can be
+reformatted back into a $[W\times 3\times\Lambda\times 1]$ synthetic
+patch; the model for the patches is arbitrary linear combinations of
+the first $K$ eigenvectors from the PCA.  $K$ is a control parameter
+controlling the freedom of the model.  As per usual, the PCA step
+makes no use of any uncertainty estimates for the input data; the
+first $K$ eigenvectors span the $K$-dimensional subspace of the full
+data space that contains most of the variance of the original data.
 
-reconstruct patches as a function of $K$, save residuals
+Given the $K$ top eigenvectors from the training set, each patch in
+the test set can be reconstructed by finding the linear combination
+that minimizes the total squared reconstruction error (residual).
+Again, at this reconstruction set, we do not use any uncertainty or
+noise estimates for the data.  We perform this reconstruction for each
+patch $P_{r \theta n}$ at a number of different values of $K$, saving
+the patch residual $\Delta P^{(K)}_{r \theta n}$, which has the same
+dimensions as the original patch but contains the residual data minus
+reconstruction.
+
+If there happens to be a companion centered at location $(r, \theta,
+n)$ and if the model is not so free (for at least some values of $K$)
+that it can fully absorb it, then (for at least some values of $K$)
+the residuals $\Delta P^{(K)}_{r \theta n}$ ought to look something like a
+companion.  In order to test this hypothesis, we cross-correlate the
+residuals $\Delta P^{(K)}_{r \theta n}$ with a patch-shaped \emph{rigid
+  companion model}.  The cross-correlation looks like a normalized dot
+product between the residuals and the rigid companion model.  The
+rigid companion model is, at each wavelength index $\lambda$, the
+$[W\times 3\times 1\times 1]$ image of the point-spread function
+appropriate for that wavelength in that exposure.  The model is rigid
+in the sense that it has no free parameters.  In particular, the
+companion model has a ``white spectrum'' in the sense that it has been
+given a constant amplitude across wavelengths in the units of the
+original calibrated data output from the instrument.  That's not
+realistic.  The amplitude of the cross-correlation with the rigid
+companion model constitutes a detection signal, which can be seen as
+living in the $(r, \theta ,n)$ space, or can be combined with other
+exposures to live in a $(r, \theta)$ space, or can be transformed back
+to the original imaging $(x, y)$ space.
+
+...beat residuals against a flexible planet model for measurement...
+
+...In summary, the method is...
 
 \section{Results}
 
