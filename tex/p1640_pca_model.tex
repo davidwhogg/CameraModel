@@ -1,6 +1,7 @@
 \documentclass[12pt,pdftex,preprint]{aastex}
 
 \newcommand{\documentname}{\textsl{Article}}
+\newcommand{\etal}{\textit{et~al.}}
 \newcommand{\project}[1]{\textsl{#1}}
 \newcommand{\test}{\mathrm{test}}
 
@@ -19,63 +20,68 @@
 \altaffiltext{4}{Department of Astrophysics, American Museum of Natural History}
 
 \begin{abstract}
-We build an incredibly flexible data-driven model for the unblocked
-(and highly speckled) light in the \project{P1640} spectroscopic
-coronograph to make very sensitive detections and measurements of
-faint companions to bright stars.  The model is designed to be able to
+High dynamic-range imagers aim to block out or null light from a very
+bright primary star to make it possible to detect and measure far
+fainter companions; in real systems a small fraction of the primary
+light is scattered, diffracted, and unocculted.  We build a flexible
+data-driven model for the unocculted (and highly speckled) light in
+the \project{P1640} spectroscopic coronograph to make very sensitive
+detections and measurements.  The model is designed to be able to
 capture the spatial structure and wavelength dependence of the
-speckles but not the signal produced by a faint companion to the
-primary source.  The model includes a PCA that can capture the
-irregular expansion of the speckle pattern with wavelength, which for
-each proposed companion position is trained on pixels not overlapping
-the proposed position.  We find that we are sensitive to companions
-that are of order a percent of the brightness of the speckles, or
-hundreds (?) of thousands of times fainter than the primary star in
-the data we have, outperforming existing methods by a factor of ten.
-Future high dynamic-range imagers will require not just precise optics
-but also precise software if they are to meet their goals.
+speckles but not the signal produced by any companion.  The model
+includes a PCA that can capture the irregular expansion of the speckle
+pattern with wavelength, which for each proposed companion position is
+trained on pixels not overlapping the proposed position.  We find that
+we are sensitive to companions that are of order a percent of the
+brightness of the speckles, or hundreds (?) of thousands of times
+fainter than the primary star in the data we have, outperforming
+existing methods by a factor of ten.
 \end{abstract}
 
 \section{Introduction}
 
 High dynamic range imaging and spectroscopy is the next frontier in
 the study of exoplanets.  There is hope for atmospheric spectroscopy
-of substantial numbers of giant planets, detection of planets at large
-albedo and radius, and eventually---with something like the far-future
-\project{Terrestrial Planet Finder}---direct time-domain imaging and
-spectroscopy of Earth-like planets around other stars.  All of these
-projects involve exceedingly precise optical designs, in which the
-primary star is more-or-less nulled, at least for certain locations on
-the focal plane.  Perfect nulling is almost never possible, because it
-requires sub-wavelength control of extremely large optical surfaces
-and the wavefronts reflected from them.  There is no future of these
-projects without very sophisticated instrument models.
+of substantial numbers of giant planets, direct detection of planets
+at large albedo and radius, and eventually---with something like the
+far-future \project{Terrestrial Planet Finder}---direct time-domain
+imaging and spectroscopy of Earth-like planets around other stars.
+All of these projects involve exceedingly precise optical designs, in
+which the light from the (generally bright) primary star is
+more-or-less nulled, at least for certain locations on the focal
+plane.  Perfect nulling is almost never possible, because it requires
+sub-wavelength control of extremely large optical surfaces and the
+wavefronts reflected from them.  There is no future of these projects
+without very sophisticated instrument models and software pipelines
+that implement them.
 
-A working example is the \project{P1640} spectroscopic coronograph (reference).
-It [has the following characteristics and successes].  The images
-produced by \project{P1640} have the vast majority of the light from the primary
-star nulled at the focal plane.  The remaining light falls in a highly
-speckled pattern produced by constructive and destructive interference
-of residual imperfections in the wavefronts entering the instrument,
-made worse by differential chromatic aberration.  The speckle pattern
-is quasi-random but has some overall variation with wavelength,
-somewhat like the pure angular expansion with wavelength that would be
-expected for perfect optics, but not exactly. [Show some example data
-  here; demonstrate regularities \emph{and} variation].
+A working example is the \project{P1640} spectroscopic coronograph
+(\citealt{p1640}).  It [has the following characteristics and
+  successes].  The images produced by \project{P1640} have the vast
+majority of the light from the primary star nulled at the focal plane.
+The remaining light falls in a highly speckled pattern produced by
+constructive and destructive interference of residual imperfections in
+the wavefronts entering the instrument, made worse by differential
+chromatic aberration.  The speckle pattern is quasi-random but has
+some overall variation with wavelength, somewhat like the pure angular
+expansion with wavelength that would be expected for perfect optics,
+but not exactly. [Show some example data here; demonstrate
+  regularities \emph{and} variation].
 
 In principle, a wavelength-level model of the wavefronts and all
-optical (and non-optical) surfaces in the \project{P1640} system would produce a
-precise model of the intensity maps read out at the detector.
-Naively, this model would have of order $10^12$ parameters and be
-intractable to instantiate, let alone fit or optimize.  Without this
-model, the speckles are stochastic but with strong regularities.  This
-suggests data-driven modeling, or using the \emph{data that the
-  instrument has in fact taken} to build a precise and informative but
-flexible model of the data that it \emph{can} produce.  If this model
-can be trained on data that don't have---or aren't expected to
-have---faint companions contributing, then companions can be detected
-as failures of the model, or successes of a model that is a
-superposition of the data-driven model and a model companion.
+optical (and non-optical) surfaces in the \project{P1640} system would
+produce a precise model of the intensity maps read out at the
+detector.  Naively, this model would have of order $10^{12}$
+parameters and be intractable to instantiate, let alone fit or
+optimize.  Without this model, the speckles are stochastic but with
+strong regularities.  This suggests data-driven modeling, or using the
+\emph{data that the instrument has in fact taken} to build a precise
+and informative but flexible model of the data that it \emph{can}
+produce.  If this model can be trained on data that don't have---or
+aren't expected to have---faint companions contributing, then
+companions can be detected as failures of the model, or successes of a
+model that is a superposition of the data-driven model and a model
+companion.
 
 Of course, we don't know in advance what stars will have companions,
 and what won't; we don't have tagged data for training what are known
@@ -94,8 +100,8 @@ the focal plane.
 
 In this \documentname, we present a new methodology for modeling high
 dynamic-range data that is extremely effective when the images are
-spectroscopically sliced.  We demonstrate the method with \project{P1640} data,
-and release working code.
+spectroscopically sliced.  We demonstrate the method with
+\project{P1640} data, and release working code.
 
 \section{Method}
 
@@ -132,7 +138,7 @@ object $D_{r \theta \lambda n}$ has size (number of voxels)
 $[R\times\Theta\times\Lambda\times N]$.  We use symbol $D$ for the
 transformed data and not $I$ because in the transformation we
 multiplied by a ratio of volumes to flatten a bit the dynamic range
-[Fergus?].
+[Fergus, is this correct, and do you also whiten the data?].
 
 The data is modeled in tiny \emph{patches} $P_{r \theta n}$, which are
 cutouts of size $[W\times 3\times\Lambda\times 1]$ from the full data
@@ -188,29 +194,33 @@ reconstruction.
 If there happens to be a companion centered at location $(r, \theta,
 n)$ and if the model is not so free (for at least some values of $K$)
 that it can fully absorb it, then (for at least some values of $K$)
-the residuals $\Delta P^{(K)}_{r \theta n}$ ought to look something like a
-companion.  In order to test this hypothesis, we cross-correlate the
-residuals $\Delta P^{(K)}_{r \theta n}$ with a patch-shaped \emph{rigid
-  companion model}.  The cross-correlation looks like a normalized dot
-product between the residuals and the rigid companion model.  The
-rigid companion model is, at each wavelength index $\lambda$, the
-$[W\times 3\times 1\times 1]$ image of the point-spread function
-appropriate for that wavelength in that exposure.  The model is rigid
-in the sense that it has no free parameters.  In particular, the
-companion model has a ``white spectrum'' in the sense that it has been
-given a constant amplitude across wavelengths in the units of the
-original calibrated data output from the instrument.  That's not
-realistic.  The amplitude of the cross-correlation with the rigid
-companion model constitutes a detection signal, which can be seen as
-living in the $(r, \theta ,n)$ space, or can be combined with other
-exposures to live in a $(r, \theta)$ space, or can be transformed back
-to the original imaging $(x, y)$ space.
+the residuals $\Delta P^{(K)}_{r \theta n}$ ought to look something
+like a companion.  In order to test this hypothesis, we
+cross-correlate the residuals $\Delta P^{(K)}_{r \theta n}$ with a
+patch-shaped \emph{rigid companion model}.  The cross-correlation
+looks like a normalized dot product between the residuals and the
+rigid companion model.  [we could use an equation here].  The rigid
+companion model is, at each wavelength index $\lambda$, the $[W\times
+  3\times 1\times 1]$ image of the point-spread function appropriate
+for that wavelength in that exposure.  The model is rigid in the sense
+that it has no free parameters.  In particular, the companion model
+has a ``white spectrum'' in the sense that it has been given a
+constant amplitude across wavelengths in the units of the original
+calibrated data output from the instrument.  That's not realistic.
+The amplitude of the cross-correlation with the rigid companion model
+constitutes a detection signal, which can be seen as living in the
+$(r, \theta ,n)$ space, or can be combined with other exposures to
+live in a $(r, \theta)$ space, or can be transformed back to the
+original imaging $(x, y)$ space.
 
 ...beat residuals against a flexible planet model for measurement...
 
 ...In summary, the method is...
 
 \section{Results}
+
+...Show results on, say, two stars, plus comparison to previous
+outputs, maybe?...
 
 \section{Discussion}
 
@@ -243,12 +253,18 @@ capture and use.  Another related limitation is that we treated the
 data on different stars independently whereas data from multiple stars
 could be combined for some aspects of model training.
 
+...Why will similar effects exist in other existing and future
+ground-based imagers?...Why will they exist in TPF and space-based
+instruments?...What next?...
+
 \acknowledgements It is a pleasure to thank [insert names here].  RF
 was partially supported by [grant numbers here and same for DWH, BRO,
   DB etc].  Do we need an acknowledgement for \project{P1640}, Palomar
 observers, and so on?
 
 \begin{thebibliography}{}
+\bibitem[Oppenheimer \etal(1875)]{p1640}
+Oppenheimer,~B.~R. \etal, some P1640 publication
 \bibitem[Tsalmantza \& Hogg(2012)]{hmf}
 Tsalmantza,~P. \& Hogg,~D.~W., 2012, arXiv:1201.3370
 \end{thebibliography}
