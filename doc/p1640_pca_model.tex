@@ -140,6 +140,22 @@ transformed data and not $I$ because in the transformation we
 multiplied by a ratio of volumes to flatten a bit the dynamic range
 [Fergus, is this correct, and do you also whiten the data?].
 
+
+\begin{figure}[h!]
+\begin{center}
+\mbox{
+\includegraphics[width=2.5in]{figs/mean_xy.pdf}
+\includegraphics[width=2.5in]{figs/mean_rt.pdf}
+}
+\end{center}
+\vspace{-7mm}
+\caption{Mean over wavelength and cubes for the star
+ FU ORI. Left:
+  Cartesian representation. Right: Polar representation.}
+\label{fig:mean}
+\end{figure}
+ 
+
 The data is modeled in tiny \emph{patches} $P_{r \theta n}$, which are
 cutouts of size $[W\times 3\times\Lambda\times 1]$ from the full data
 object.  These have a width $W\sim 31$~pix in the radial direction,
@@ -155,6 +171,20 @@ of departures from the purely radial expectation.  We chose the
 angular width of 3~pix by trial and error; large values increase the
 expense of the PCA (below) without much performance benefit.
 
+
+\begin{figure}[h!]
+\begin{center}
+\mbox{
+\includegraphics[width=2.5in]{figs/radius.pdf}
+\includegraphics[width=2.5in]{figs/theta.pdf}
+}
+\end{center}
+\vspace{-7mm}
+\caption{}
+\label{fig:radiustheta}
+\end{figure}
+ 
+
 The patch resides in a \emph{slice} $S_r$, which is a cutout of size
 $[W\times\Theta\times\Lambda\times N]$ of the data; it consists of the
 unions of all the patches centered on a particular radial index $r$.
@@ -168,6 +198,16 @@ a patch defined for every angular bin $1 < \theta > \Theta$.
 Therefore the training set for one patch contains
 $[1\times(\Theta-\Theta_\test)\times 1\times N]$ or about 300 example
 patches.
+
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[width=4in]{figs/explain.pdf}
+\end{center}
+\vspace{-7mm}
+\caption{}
+\label{fig:spectrum}
+\end{figure}
+ 
 
 In the PCA step, we reformat the training set of patches into a
 two-dimensional data matrix and find the singular value decomposition
@@ -213,11 +253,59 @@ $(r, \theta ,n)$ space, or can be combined with other exposures to
 live in a $(r, \theta)$ space, or can be transformed back to the
 original imaging $(x, y)$ space.
 
+\begin{figure}[h!]
+\begin{center}
+\mbox{
+\includegraphics[width=2.5in]{figs/eigenvectors.pdf}
+\includegraphics[width=3.1in]{figs/spectrum.pdf}
+}
+\end{center}
+\vspace{-7mm}
+\caption{}
+\label{fig:spectrum}
+\end{figure}
+ 
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[width=5in]{figs/patch_reconstructions.pdf}
+\end{center}
+\vspace{-7mm}
+\caption{}
+\label{fig:patch_recon}
+\end{figure}
+  
+ 
 ...beat residuals against a flexible planet model for measurement...
 
 ...In summary, the method is...
 
 \section{Results}
+
+\begin{table}
+\vspace{-15pt}
+\begin{center}
+\begin{tabular} { | c | c | c || c | c | c | c | c | c | c | c | } \hline
+ Location & X & Y & 0.5\% &  1\% &  2\%  &  3\%  & 4 \% & 5\% & 7.5\%
+ & 10\% \\ \hline \hline
+ 1    &   35  &    70  &   32  &    16  &    1  &     1  &     1  &     1   &    1  &     1\\ \hline
+2    &   40  &    30  &  7  &    16  &    1  &     1  &     1  &     1   &    1  &     1\\ \hline
+3    &   60  &    70  &   -  &    5  &    1  &     1  &     1  &     1   &    1  &     1\\ \hline
+ 4    &   65  &   35  &   27  &   21  &    3  &     1  &     1  &     1   &    1  &     1\\ \hline
+\end{tabular}
+\end{center}
+\caption{Synthetic companion insertion on HD87696. Blob rank shown for 4 different locations.}
+\label{table:result1}
+\end{table}
+
+
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[width=5in]{figs/maps.pdf}
+\end{center}
+\vspace{-7mm}
+\caption{}
+\label{fig:results1}
+\end{figure}
 
 ...Show results on, say, two stars, plus comparison to previous
 outputs, maybe?...
