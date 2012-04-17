@@ -27,38 +27,45 @@ class ShadowBox(Camera):
     * `fratio`: F ratio of the primary optics (default 4).
     * `distorted`: If `True`, apply random distortions.
     '''
-    def __init__(self, fratio=1., distorted=False):
+    def __init__(self, fratio=0.5, distorted=False):
         self.stages = []
-        D = 8. # camera aperture diameter in microns
+        D = 12. # camera aperture diameter in microns
         res = 0.2 # resolution of grid in microns
         transmitter = OpticalSurface(D, res)
         f = fratio * D # distance from screen to detector
         if distorted:
             transmitter.distort_randomly()
-        detector = OpticalSurface(2. * D, res, square=True)
-        detector.shift(f)
+        detector = OpticalSurface(0.75 * D, res, square=True)
+        detector.shift(f) # z-axis offset
+        detector.x[:,0] += 0.5 * detector.D
+        detector.x[:,1] += 0.5 * detector.D
         self.stages.append(CameraStage(transmitter, detector))
         return None
 
 if __name__ == '__main__':
     np.random.seed(42)
     lam = 0.55 # microns
-    for dlam in (None, 0.15): # microns
-        for distorted in (False, ): # only do undistorted
+    for distorted in (False, ): # only do undistorted
+        plt.figure(figsize=(10,10))
+        plt.clf()
+        k = 0
+        for dlam in (None, 0.15): # microns
             sb = ShadowBox(distorted=distorted)
             image = sb.take_one_image(lam, dlam=dlam, nlam=32)
             Ny = np.round(np.sqrt(len(image))).astype(int)
-            logI = np.log(image.reshape((Ny, Ny)))
-            vmax = np.max(logI)
-            plt.clf()
+            I = image.reshape((Ny, Ny))
+            vmax = np.mean(I)
+            k += 1
+            plt.subplot(2,2,k)
             plt.gray()
-            plt.imshow(logI, vmin=vmax-8., vmax=vmax)
+            plt.imshow(I, vmin=0., vmax=vmax, interpolation='nearest')
             plt.axis('equal')
+            k += 1
+            plt.subplot(2,2,k)
+            plt.plot(I[Ny/2,:])
+            plt.axhline(vmax)
             if distorted:
                 suffix = 'distorted'
             else:
                 suffix = 'undistorted'
-            dlamlabel = dlam
-            if dlamlabel is None:
-                dlamlabel = 0
-            plt.savefig('shadowbox-%3.2f-%3.2f-%s.png' % (lam, dlamlabel, suffix))
+            plt.savefig('shadowbox-%3.2f-%s.png' % (lam, suffix))

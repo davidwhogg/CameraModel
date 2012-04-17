@@ -231,7 +231,7 @@ class Camera():
             lams = (lam - 0.5 * dlam + 0.5 * ddlam) + ddlam * np.arange(nlam)
         receivedamp = 0.
         for lam in lams:
-            phase = np.random.uniform(2. * np.pi)
+            phase = np.random.uniform(0., 2. * np.pi)
             print lam, phase
             amp = np.ones(len(self.stages[0].transmitter.x)) * np.exp(1j * phase)
             for stage in self.stages:
