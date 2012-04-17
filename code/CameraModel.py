@@ -1,6 +1,10 @@
 '''
 This file is part of CameraModel.
 Copyright 2012 David W. Hogg (NYU) <http://cosmo.nyu.edu/hogg/>.
+
+This implements the basic camera model as a set of stages, each of
+which has optical surfaces.  It is slow, because it doesn't yet use
+the FFT tricks Greengard suggests.
 '''
 
 if __name__ == '__main__':
