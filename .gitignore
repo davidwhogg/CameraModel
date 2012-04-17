@@ -2,4 +2,5 @@
 *.aux
 *.log
 *.png
+*.pyc
 p1640_pca_model.pdf
