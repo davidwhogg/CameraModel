@@ -4,7 +4,10 @@ Copyright 2012 David W. Hogg (NYU) <http://cosmo.nyu.edu/hogg/>.
 
 This implements the basic camera model as a set of stages, each of
 which has optical surfaces.  It is slow, because it doesn't yet use
-the FFT tricks Greengard suggests.
+the FFT tricks Greengard suggests.  Issues include:
+
+* Needs to implement FFT tricks.
+* Needs to permit incoherent superposition of many wavelengths!
 '''
 
 if __name__ == '__main__':
@@ -199,34 +202,42 @@ class Camera():
         self.stages = stages
         return None
 
-    def take_one_image(self, lam, amplitude=None):
+    def take_one_image(self, lam, dlam=None, nlam=16):
         '''
         ## `take_one_image()`:
 
         Transmit an input complex amplitude map through the whole
-        `Camera`.
+        `Camera`.  In the future, this needs to permit something other
+        than a normal plane wave!  And something other than a "white"
+        spectrum (in whatever units we are working).
 
         # input:
 
         * `lam`: The wavelength lam at which the image is to be taken.
-        * `amplitude`: The complex amplitude map at the transmitter
-          surface of the zeroth `CameraStage`.  If `None` then just
-          make a constant-amplitude map.
+        * `dlam`: If not `None`, the range of wavelengths around the
+          central wavelength.
+        * `nlam`: The number of wavelengths to use (not used if `dlam`
+          is `None`)
 
         # output:
 
         The intensity (not amplitude!) at the receiver surface of the
         final `CameraStage`.
         '''
-        if amplitude is None:
-            amp = np.ones(len(self.stages[0].transmitter.x))
+        if dlam is None:
+            lams = [lam]
         else:
-            amp = amplitude
-        for stage in self.stages:
-            print amp
-            amp = stage.receive(lam, amp)
-        print amp
-        return np.real(amp)**2 + np.imag(amp)**2
+            ddlam = dlam / float(nlam)
+            lams = (lam - 0.5 * dlam + 0.5 * ddlam) + ddlam * np.arange(nlam)
+        receivedamp = 0.
+        for lam in lams:
+            phase = np.random.uniform(2. * np.pi)
+            print lam, phase
+            amp = np.ones(len(self.stages[0].transmitter.x)) * np.exp(1j * phase)
+            for stage in self.stages:
+                amp = stage.receive(lam, amp)
+            receivedamp += amp
+        return np.real(receivedamp)**2 + np.imag(receivedamp)**2
 
 class Coronograph(Camera):
     '''
