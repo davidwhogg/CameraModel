@@ -30,12 +30,12 @@ class ShadowBox(Camera):
     def __init__(self, fratio=0.5, distorted=False):
         self.stages = []
         D = 12. # camera aperture diameter in microns
-        res = 0.2 # resolution of grid in microns
+        res = 0.1 # resolution of grid in microns (1/4 wave-ish)
         transmitter = OpticalSurface(D, res)
         f = fratio * D # distance from screen to detector
         if distorted:
             transmitter.distort_randomly()
-        detector = OpticalSurface(0.75 * D, res, square=True)
+        detector = OpticalSurface(0.75 * D, 2. * res, square=True)
         detector.shift(f) # z-axis offset
         detector.x[:,0] += 0.5 * detector.D
         detector.x[:,1] += 0.5 * detector.D
@@ -49,9 +49,9 @@ if __name__ == '__main__':
         plt.figure(figsize=(10,10))
         plt.clf()
         k = 0
-        for dlam in (None, 0.15): # microns
+        for dlam in (None, lam / 1.5): # microns
             sb = ShadowBox(distorted=distorted)
-            image = sb.take_one_image(lam, dlam=dlam, nlam=32)
+            image = sb.take_one_image(lam, dlam=dlam, nlam=128)
             Ny = np.round(np.sqrt(len(image))).astype(int)
             I = image.reshape((Ny, Ny))
             vmax = np.mean(I)
@@ -62,7 +62,7 @@ if __name__ == '__main__':
             plt.axis('equal')
             k += 1
             plt.subplot(2,2,k)
-            plt.plot(I[Ny/2,:])
+            plt.plot(I[0,:])
             plt.axhline(vmax)
             if distorted:
                 suffix = 'distorted'
