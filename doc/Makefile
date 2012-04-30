@@ -1,4 +1,4 @@
-all: p1640_pca_model.pdf
+all: p1640_pca_model.pdf proposal.pdf
 
 %.pdf: %.tex
 	pdflatex $<
