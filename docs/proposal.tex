@@ -10,45 +10,70 @@
 \newcommand{\secc}[1]{Section~\ref{sec:#1}}
 \newcommand{\eqn}[1]{Eqn.\ \ref{eqn:#1}}
 \newcommand{\rob}[1]{\textbf{\textcolor{green}{#1}}}
+\setlength{\parskip}{0ex}
+\setlength{\headheight}{0ex}
+\setlength{\headsep}{2ex}
 
 \begin{document}
 
+% third-person summary NSF, style!
+
 \paragraph{A precise data-driven model for direct imaging of exoplanets}~
 
-Though thousands of exoplanets are now known, not one [NONE?] has been
-directly imaged.  The current best hope for direct detection is with
-coronographs.  These are high dynamic-range imagers that block out
-light from a very bright primary star to make it possible to detect
-and measure far fainter companions; in real systems a small fraction
-of the primary light is scattered, diffracted, and unocculted.
-Although this unblocked light is a tiny fraction of the primary
-stellar light, it can still be far brighter than the target exoplanet
-at every location in the focal plane.  Coronagraphs may be followed by
-spectrographs; spectral diversity helps to distinguish low level
-companions from the residual star light that evidences itself as a
-pedestal and a myriad of speckles in which companions hide.
+\textsl{Intellectual merit:} Though thousands of exoplanets are now
+known, not one [NONE?] has been directly imaged.  The current best
+hope for direct detection is with coronographs.  These are high
+dynamic-range imagers that block out light from a very bright primary
+star to make it possible to detect and measure far fainter companions;
+in real systems a small fraction of the primary light is scattered,
+diffracted, and unocculted.  Although this unblocked light is a tiny
+fraction of the primary stellar light, it can still be far brighter
+than the target exoplanet at every location in the focal plane.
+Coronagraphs may be followed by spectrographs; spectral diversity
+helps to distinguish low level companions from the residual star light
+that evidences itself as a pedestal and a myriad of speckles in which
+companions hide.
 
-We have built a flexible data-driven model for the \project{P1640}
-spectroscopic coronograph to make very sensitive detections and
-measurements.  The model is designed to be able to capture the spatial
-structure and wavelength dependence of the speckles but not the signal
-produced by any companion. Consequently, the modeling error typically
-includes the companion signal. The companion can thus be found by
-filtering this error signal with a fixed model.  We find that we are
-sensitive to companions that are of order a percent of the brightness
-of the speckles, or hundreds [HUNDREDS?] of thousands of times fainter
-than the primary star, outperforming existing methods by a factor of
-ten.
+Making use of ideas from computer vision and computer science, the
+proposers have built a prototype software system to build a flexible
+data-driven model of the \project{P1640} spectroscopic coronograph to
+make very sensitive detections and measurements.  The model is
+designed to be able to capture the spatial structure and
+wavelength-dependence of the speckles but \emph{not capture} the
+signal produced by any companion. Consequently, the system is designed
+to make sure the residual of the speckle fit includes the companion
+signal. The companion can then be found by filtering the error signal
+with a fixed model.  The prototype system is sensitive to companions
+that are of order a percent of the brightness of the speckles, or
+hundreds [HUNDREDS?] of thousands of times fainter than the primary
+star, outperforming existing data processing methods by an order of
+magnitude.
 
-Here we propose to fully develop these ideas: We propose to explore a
-set of improvements that will improve even further these preliminary
-results, bringing much higher scientific return to the \project{P1640}
-instrument and project.  We propose to create a flexible pipeline
-framework useful not just for the \project{P1640} coronograph but all
-other coronographs in development, including \project{GPI} and
-far-future instrument concepts.  We propose to develop and release
-maintainable, executable, open-source code that is documented and
-modifiable.
+This proposal is to fully develop these ideas: The plan is to convert
+the prototype system into a working pipeline.  The proposal includes
+exploration of a wide range of improvements that will increase
+performance beyond that of the already-successful prototype, bringing
+much higher scientific return to the \project{P1640} instrument and
+project.  An important goal of the project is to create a flexible
+pipeline framework useful not just for the \project{P1640} coronograph
+but all other coronographs in development, including \project{GPI} and
+far-future instrument concepts.  The proposers will---at all stages of
+the project---release maintainable, executable, open-source-licensed
+code that is documented and modifiable.
+
+\textsl{Broader impacts:} Exoplanet imaging and spectroscopy are among
+the most important subjects of study not just for astrophysics but
+also for the public, so this work has direct impact by its nature.  In
+addition, much of the proposed work will be executed with
+undergraduate researchers; the collaborators have a track record of
+working with STEM undergraduates from under-represented groups.  The
+research experiences brought by this project are not only valuable in
+themselves, they are interdisciplinary between the fields of computer
+vision and astrophysics.  Finally, the public release of open-source
+software creates opportunities for amateurs and hobbyists to use and
+modify code.  The proposers have good experience interfacing with this
+community and have both delivered software to, and received software
+patches from, non-traditional contributors.
 
 \clearpage
 \section{Introduction}
@@ -347,7 +372,7 @@ for more convenient viewing.
 \label{fig:patch_recon}
 \end{figure}
 
-\section{Results to date}
+\section{Prototype results}
 We demonstrate our approach on a variety of data cubes obtained from
 the P1640 instrument. The experiments involving inserting a fake
 companion (with a red spectrum) into the cubes of a given star and running our detection
@@ -431,12 +456,12 @@ the inserted source. The figure is best viewed on screen. }
 
 \section{This proposal}
 
-We have shown that a very flexible model for the unblocked light and a
-model for a point-source companion can be used to make very precise
-detections and measurements of faint companions in the high
-dynamic-range spectroscopic imaging \project{P1640} instrument.  The
-performance of our system is better by an order of magnitude than
-existing methods for detecting faint companions.
+We have shown with the prototype that a very flexible model for the
+unblocked light and a model for a point-source companion can be used
+to make very precise detections and measurements of faint companions
+in the high dynamic-range spectroscopic imaging \project{P1640}
+instrument.  The performance of our system is better by an order of
+magnitude than existing methods for detecting faint companions.
 
 There are a number of issues with the methods we have presented here;
 work on these could further improve performance: We don't use a proper
@@ -459,6 +484,8 @@ altitudes show regularities that a more sophisticated model could
 capture and use.  Another related limitation is that we treated the
 data on different stars independently whereas data from multiple stars
 could be combined for some aspects of model training.
+
+
 
 Some points to discuss/explore further:
 \begin{itemize}
