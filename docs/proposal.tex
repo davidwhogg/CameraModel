@@ -1,7 +1,6 @@
 \documentclass[12pt,pdftex,preprint]{aastex}
 
 \usepackage{color}
-\newcommand{\documentname}{\textsl{Article}}
 \newcommand{\etal}{\textit{et~al.}}
 \newcommand{\project}[1]{\textsl{#1}}
 \newcommand{\test}{\mathrm{test}}
@@ -463,43 +462,70 @@ in the high dynamic-range spectroscopic imaging \project{P1640}
 instrument.  The performance of our system is better by an order of
 magnitude than existing methods for detecting faint companions.
 
-There are a number of issues with the methods we have presented here;
-work on these could further improve performance: We don't use a proper
-instrument noise model in the construction of the model.  It would be
-better to modify the PCA operation so that it makes use of the known
-noise properties of the instrument (such as that of \citealt{hmf}).
-In our mixture model (unblocked light plus planet), the planet model
-is very rigid; it contains a particular SED assumption at the
-detection step, and doesn't have enough angular flexibility to capture
-possibly significant point-spread function morphology and variability.
-Not surprisingly, the data-driven model we use is \emph{data starved};
-it takes an enormous amount of data to fully constrain a flexible
-data-driven model.  The model will get better as more data get taken
-of a wider range of objects over a wider range of instrument and
-atmospheric conditions.  Related to this, the model we use does not
-take as input any meta data about the telescope attitude (think
-``gravitational loading'' and ``differential chromatic refraction'')
-or observing conditions in training.  Data taken at different
-altitudes show regularities that a more sophisticated model could
-capture and use.  Another related limitation is that we treated the
-data on different stars independently whereas data from multiple stars
-could be combined for some aspects of model training.
+Points to expand into a proposal:
 
+Not surprisingly, the prototype data-driven model we use is \emph{data
+  starved}; it takes an enormous amount of data to fully constrain a
+flexible data-driven model.  The model will get better as more data
+get taken of a wider range of objects over a wider range of instrument
+and atmospheric conditions.  We propose to take these data [BEN?]
 
+Related to this, the model could benefit enormously from meta-data
+about the telescope attitude (think ``gravitational loading'' and
+``differential chromatic refraction'') or observing conditions in
+training.  Data taken at different altitudes show regularities that
+the model can capture and use.  We propose to look for such
+relationships, at first by regressing fit residuals and PCA-derived
+linear subspaces against telescope attitude information.  If we find
+relationships---and we expect to---we will extend the model to take
+these meta-data as input and at training learn the dependencies.
 
-Some points to discuss/explore further:
-\begin{itemize}
-\item Per-radius polar transform to ensure consistent sampling ratio.
-\item Spectral estimation. I.e. make spectrum of companion a latent
-  variable.
-\item Importance of accurate centering of cubes to ensure radial behavior.
-\end{itemize}
+Another extremely important step forward will be to look at the
+cross-star instrument reliability and repeatability.  In the prototype
+we treat the data on different stars independently, whereas data from
+multiple stars could be combined for some aspects of model training.
+That is, there might be common PCA subspace components from star to
+star.  This relates to the questions of telescope configuration and
+attitude; it is not clear to what the variations in PSF and speckle
+are most closely related.  We propose to find out.
+
+One very important part of this proposal is to generate a quantitative
+noise model for the instrument and to use it in training and test.  In
+the prototype, we don't use a proper instrument noise model in the
+construction of the model.  It would be better to modify the PCA
+operation so that it makes use of the known noise properties of the
+instrument (such as that of \citealt{hmf}).
+
+In the detection (correlation of residuals with a planet model),
+sensitivity will increase as the the planet model is made more
+accurate.  We propose to take the lab data [BEN?] to obtain sufficient
+information about the field-position-dependent point-spread function
+of a faint companion.  This information can be used to train the
+detection step to make it less rigid and more informed by real
+instrument performance, relative to the prototype.
+
+There are a number of other more technical improvements that we
+propose to explore and make.  We can improve the data transformations
+that go from raw to corrected, calibrated spectral cubes.  We can
+combine the spectral estimation and detection steps, by making the
+companion SED a function of wavelength and fitting that---or
+marginalizing it out---at the residual-correlation step.  We can
+improve the centroiding both of the star on the stop (at the
+telescope) and of the model in the data cube (in software,
+afterwards).  Small centroiding issues make for significant modeling
+problems since the fundamental idea behind the data-driven model is
+that it captures radial motions of speckle perfectly, and deviations
+from that less perfectly.
+
+...stuff about TPF and GPI in general...
 
 ...Why will similar effects exist in other existing and future
 ground-based imagers?...Why will they exist in TPF and space-based
-instruments?...What next?...
+instruments?...What next?..
 
 \section{Prior NSF support}
+
+[BEN:  Rob and I have stuff we can add in here if this section needs to exist.]
 
 \section{Project timeline}
 
